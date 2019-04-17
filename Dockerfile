@@ -1,22 +1,17 @@
-FROM centos:7
+FROM alpine:latest
 
-ARG USER_ID=14
-ARG GROUP_ID=50
-
-MAINTAINER Fer Uria <fauria@gmail.com>
-LABEL Description="vsftpd Docker image based on Centos 7. Supports passive mode and virtual users." \
+MAINTAINER Tim Unkrig <tunkrig@gmail.com>
+LABEL Description="vsftpd Docker image based on Alpine. Supports passive mode and virtual users." \
 	License="Apache License 2.0" \
-	Usage="docker run -d -p [HOST PORT NUMBER]:21 -v [HOST FTP HOME]:/home/vsftpd fauria/vsftpd" \
-	Version="1.0"
+	Usage="docker run -d -p [HOST PORT NUMBER]:21 -v [HOST FTP HOME]:/home/vsftpd haup/vsftpd" \
+	Version="0.1"
 
-RUN yum -y update && yum clean all
-RUN yum install -y \
+RUN apk update && apk upgrade
+RUN apk --no-cache add \
+	shadow \
 	vsftpd \
-	db4-utils \
-	db4 && yum clean all
-
-RUN usermod -u ${USER_ID} ftp
-RUN groupmod -g ${GROUP_ID} ftp
+	db-utils \
+	db
 
 ENV FTP_USER **String**
 ENV FTP_PASS **Random**
