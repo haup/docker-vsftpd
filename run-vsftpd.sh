@@ -64,8 +64,16 @@ fi
 if [ "$SSL" = "True" ]; then
 	if [ ! -f /etc/vsftpd/vsftpd.cert.pem ]; then
 		# openssl req -x509 -nodes -newkey rsa:1024 -keyout /etc/vsftpd/vsftpd.pem -out /etc/vsftpd/vsftpd.pem -days 3650
-		openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -subj "/C=DE/ST=Denial/L=Maschen/O=Dis/CN=files.ohl.de" -keyout /etc/vsftpd/vsftpd.key.pem  -out /etc/vsftpd/vsftpd.cert.pem
-
+		if [ ! %SSL_CN ]; then
+			SSL_CN = "ftp.example.com"
+		fi
+		if [ ! %SSL_L ]; then
+			SSL_CN = "Timbuktu"
+		fi
+		if [ ! %SSL_C ]; then
+			SSL_CN = "Pangea"
+		fi
+		openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -subj "/C=${SSL_L}/ST=Denial/L=${SSL_C}/O=Dis/CN=${SSL_CN}" -keyout /etc/vsftpd/vsftpd.key.pem  -out /etc/vsftpd/vsftpd.cert.pem
 	fi
 	echo "ssl_enable=YES" >> /etc/vsftpd/vsftpd.conf
 	echo "allow_anon_ssl=YES" >> /etc/vsftpd/vsftpd.conf
