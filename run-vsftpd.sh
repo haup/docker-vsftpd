@@ -61,5 +61,24 @@ else
     /usr/bin/ln -sf /dev/stdout $LOG_FILE
 fi
 
+if [ "$SSL" = "True" ]; then
+	if [ ! -f /etc/vsftpd/vsftpd.cert.pem ]; then
+		# openssl req -x509 -nodes -newkey rsa:1024 -keyout /etc/vsftpd/vsftpd.pem -out /etc/vsftpd/vsftpd.pem -days 3650
+		openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -subj "/C=DE/ST=Denial/L=Maschen/O=Dis/CN=files.ohl.de" -keyout /etc/vsftpd/vsftpd.key.pem  -out /etc/vsftpd/vsftpd.cert.pem
+
+	fi
+	echo "ssl_enable=YES" >> /etc/vsftpd/vsftpd.conf
+	echo "allow_anon_ssl=YES" >> /etc/vsftpd/vsftpd.conf
+	echo "ssl_ciphers=HIGH" >> /etc/vsftpd/vsftpd.conf
+	echo "force_local_data_ssl=YES" >> /etc/vsftpd/vsftpd.conf
+	echo "force_local_logins_ssl=YES" >> /etc/vsftpd/vsftpd.conf
+	echo "ssl_tlsv1=YES" >> /etc/vsftpd/vsftpd.conf
+	echo "ssl_sslv2=NO" >> /etc/vsftpd/vsftpd.conf
+	echo "ssl_sslv3=NO" >> /etc/vsftpd/vsftpd.conf
+	echo "require_ssl_reuse=NO" >> /etc/vsftpd/vsftpd.conf
+	echo "rsa_cert_file=/etc/vsftpd/vsftpd.cert.pem" >> /etc/vsftpd/vsftpd.conf
+	echo "rsa_private_key_file=/etc/vsftpd/vsftpd.key.pem" >> /etc/vsftpd/vsftpd.conf
+fi
+
 # Run vsftpd:
 &>/dev/null /usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf
