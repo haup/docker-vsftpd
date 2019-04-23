@@ -8,9 +8,9 @@
 
 This Docker container implements a vsftpd server, with the following features:
 
- * Centos 7 base image.
+ * Alpine base image.
  * vsftpd 3.0
- * Virtual users
+ * Virtual users with htpasswd and openssl
  * Passive mode
  * Logging to a file or STDOUT.
 
@@ -19,7 +19,7 @@ This Docker container implements a vsftpd server, with the following features:
 You can download the image with the following command:
 
 ```bash
-docker pull fauria/vsftpd
+docker pull haup/vsftpd
 ```
 
 Environment variables
@@ -130,7 +130,7 @@ Use cases
 2) Create a container in active mode using the default user account, with a binded data directory:
 
 ```bash
-docker run -d -p 21:21 -v /my/data/directory:/home/vsftpd --name vsftpd fauria/vsftpd
+docker run -d -p 21:21 -v /my/data/directory:/home/vsftpd --name vsftpd haup/vsftpd
 # see logs for credentials:
 docker logs vsftpd
 ```
@@ -142,15 +142,15 @@ docker run -d -v /my/data/directory:/home/vsftpd \
 -p 20:20 -p 21:21 -p 21100-21110:21100-21110 \
 -e FTP_USER=myuser -e FTP_PASS=mypass \
 -e PASV_ADDRESS=127.0.0.1 -e PASV_MIN_PORT=21100 -e PASV_MAX_PORT=21110 \
---name vsftpd --restart=always fauria/vsftpd
+--name vsftpd --restart=always haup/vsftpd
 ```
 
 4) Manually add a new FTP user to an existing container:
 ```bash
 docker exec -i -t vsftpd bash
 mkdir /home/vsftpd/myuser
-echo -e "myuser\nmypass" >> /etc/vsftpd/virtual_users.txt
-/usr/bin/db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
+echo "username:$(openssl passwd -1 password)" >> /etc/vsftpd/virtual_users
 exit
 docker restart vsftpd
 ```
+

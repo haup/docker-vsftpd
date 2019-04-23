@@ -1,32 +1,37 @@
-FROM centos:7
-
-ARG USER_ID=14
-ARG GROUP_ID=50
+FROM alpine:latest
 
 MAINTAINER Tim Unkrig <tunkrig@gmail.com>
-LABEL Description="vsftpd Docker image based on Centos 7. Supports passive mode and virtual users with basic TLS Support. Forked from fauria/vsftpd" \
+LABEL Description="vsftpd Docker image based on Alpine. Supports passive mode and virtual users with basic TLS Support. Forked from fauria/vsftpd" \
 	License="Apache License 2.0" \
 	Usage="docker run -d -p [HOST PORT NUMBER]:21 -v [HOST FTP HOME]:/home/vsftpd -e [SSL=True]  haup/vsftpd" \
 	Version="1.0"
 
-RUN yum -y update && yum clean all
-RUN yum install -y \
-	vsftpd \
-	db4-utils \
-	db4 \
-	iproute \
-	openssl && yum clean all
-
-RUN usermod -u ${USER_ID} ftp
-RUN groupmod -g ${GROUP_ID} ftp
+RUN build_pkgs="build-base curl linux-pam-dev tar" && \
+    runtime_pkgs="bash ca-certificates openssl apache2-utils linux-pam" && \
+    apk update && \
+    apk upgrade && \
+    apk --update --no-cache add vsftpd ${build_pkgs} ${runtime_pkgs} && \
+    # get us pam_pwdfile
+    mkdir pam_pwdfile && \
+    cd pam_pwdfile && \
+    curl -sSL https://github.com/tiwe-de/libpam-pwdfile/archive/v1.0.tar.gz | tar xz --strip 1 && \
+    make install && \
+    cd .. && \
+	rm -rf pam_pwdfile && \
+	# remove dev dependencies
+    apk del ${build_pkgs} && \
+    # other clean up
+    rm -rf /var/cache/apk/* && \
+    rm -rf /tmp/* && \
+	rm -rf /var/log/*
 
 ENV FTP_USER **String**
 ENV FTP_PASS **Random**
 ENV PASV_ADDRESS **IPv4**
 ENV PASV_ADDR_RESOLVE NO
 ENV PASV_ENABLE YES
-ENV PASV_MIN_PORT 21100
-ENV PASV_MAX_PORT 21110
+ENV PASV_MIN_PORT 50110
+ENV PASV_MAX_PORT 50310
 ENV LOG_STDOUT **Boolean**
 ENV FILE_OPEN_MODE 0666
 ENV LOCAL_UMASK 077
@@ -41,6 +46,7 @@ RUN chown -R ftp:ftp /home/vsftpd/
 
 VOLUME /home/vsftpd
 VOLUME /var/log/vsftpd
+VOLUME /etc/vsftpd/config
 
 EXPOSE 20 21
 

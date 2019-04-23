@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-
+  
   vsftpd:
     build:
       context: .
@@ -9,11 +9,19 @@ services:
       args:
         USER_ID: 1000
         GROUP_ID: 1000
+      environment:
+        - SSL=True
+        - SSL_CN=files.example.com
+        - SSL_C=DE
+        - SSL_L=Timbuktu
+        - PASV_ADDRESS=127.0.0.1
+        - PASV_MIN_PORT=50110
+        - PASV_MAX_PORT=50310
     restart: always
     ports:
       - 0.0.0.0:20:20
       - 0.0.0.0:21:21
-      - 21100-21110:21100-21110
+      - 50110-50310:50110-50310
     volumes:
       - ./home:/home/vsftpd
       - ./logs:/var/log/vsftpd
